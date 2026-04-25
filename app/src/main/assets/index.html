@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Futebol na TV</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f0e8;min-height:100vh;padding-bottom:2rem;}
+.header{background:#2c1810;padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;}
+.header-logo{width:44px;height:44px;border-radius:50%;overflow:hidden;border:2px solid #c8962a;flex-shrink:0;background:#3d2010;display:flex;align-items:center;justify-content:center;}
+.header-logo img{width:100%;height:100%;object-fit:cover;object-position:center top;}
+.header-text h1{color:#f5e6c8;font-size:16px;font-weight:600;}
+.header-text p{color:#c8962a;font-size:11px;margin-top:1px;}
+.tabs{display:flex;background:#1e0f08;}
+.tab{flex:1;padding:10px 8px;text-align:center;font-size:13px;font-weight:600;color:rgba(245,230,200,0.45);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;}
+.tab.active{color:#f5e6c8;border-bottom-color:#c8962a;}
+.search-wrap{padding:10px 12px;background:#fff;border-bottom:1px solid #e8e0d0;}
+.search-wrap input{width:100%;padding:9px 14px;border-radius:10px;border:1px solid #ddd;font-size:14px;background:#f9f6f0;color:#333;outline:none;}
+.search-wrap input:focus{border-color:#c8962a;}
+.filter-section{background:#fff;border-bottom:1px solid #e8e0d0;padding:10px 12px;}
+.filter-title{font-size:11px;font-weight:600;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;}
+.checkbox-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;}
+.cb-item{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:8px;border:1px solid #e8e0d0;background:#f9f6f0;cursor:pointer;user-select:none;transition:all 0.15s;}
+.cb-item.checked{background:#fdf3e0;border-color:#c8962a;}
+.cb-box{width:16px;height:16px;border-radius:4px;border:1.5px solid #ccc;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;}
+.cb-item.checked .cb-box{background:#c8962a;border-color:#c8962a;}
+.cb-check{width:9px;height:6px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translateY(-1px);display:none;}
+.cb-item.checked .cb-check{display:block;}
+.cb-label{font-size:12px;font-weight:500;color:#333;flex:1;}
+.cb-count{font-size:11px;color:#aaa;}
+.reset-btn{margin-top:8px;font-size:12px;color:#c8962a;cursor:pointer;background:none;border:none;padding:2px 0;}
+.total-tag{font-size:12px;color:#999;padding:8px 14px 0;}
+.game-list{padding:0 12px;margin-top:8px;}
+.hour-label{font-size:12px;font-weight:600;color:#888;padding:8px 0 5px;display:flex;align-items:center;gap:6px;letter-spacing:0.03em;}
+.hour-dot{width:6px;height:6px;border-radius:50%;background:#c8962a;flex-shrink:0;}
+.game-card{background:#fff;border-radius:12px;border:1px solid #ece6dc;padding:11px 13px;margin-bottom:8px;}
+.game-meta{display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap;}
+.time-badge{font-size:11px;font-weight:600;color:#7a4f1a;background:#fdf3e0;padding:3px 8px;border-radius:10px;border:1px solid #e8c97a;}
+.league-badge{font-size:10px;font-weight:600;padding:3px 8px;border-radius:10px;white-space:nowrap;}
+.game-title{font-size:14px;font-weight:600;color:#1a1a1a;line-height:1.35;}
+.channels{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+.ch{font-size:11px;padding:2px 7px;border-radius:6px;font-weight:500;}
+.ch-yt{background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c;}
+.ch-disney{background:#eff6ff;border:1px solid #93c5fd;color:#1e3a8a;}
+.ch-espn{background:#fff7ed;border:1px solid #fdba74;color:#9a3412;}
+.ch-sportv{background:#faf5ff;border:1px solid #c084fc;color:#6b21a8;}
+.ch-prime{background:#f0fdf4;border:1px solid #6ee7b7;color:#065f46;}
+.ch-gen{background:#f5f5f5;border:1px solid #ddd;color:#555;}
+.loading{text-align:center;padding:3rem 1rem;color:#999;}
+.loading-spinner{width:32px;height:32px;border:3px solid #e8e0d0;border-top-color:#c8962a;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.no-results{text-align:center;padding:3rem 1rem;color:#999;font-size:14px;}
+.error-box{margin:16px 12px;background:#fff5f5;border:1px solid #fca5a5;border-radius:10px;padding:14px;font-size:13px;color:#b91c1c;text-align:center;}
+.notice{font-size:11px;color:#c8962a;text-align:center;padding:6px 12px;background:#fdf9f0;border-bottom:1px solid #e8d8b0;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">
+    <img src="mascote.png" alt="Mascote" onerror="this.style.display='none'">
+  </div>
+  <div class="header-text">
+    <h1>Futebol na TV</h1>
+    <p>jogos ao vivo — hoje e amanhã</p>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" id="tab-hoje" onclick="switchDay('hoje')">Hoje</div>
+  <div class="tab" id="tab-amanha" onclick="switchDay('amanha')">Amanhã</div>
+</div>
+
+<div class="notice" id="notice">carregando jogos...</div>
+
+<div class="search-wrap">
+  <input type="text" id="search" placeholder="Buscar time, liga ou canal..." oninput="render()">
+</div>
+
+<div class="filter-section">
+  <div class="filter-title">Filtrar por liga</div>
+  <div class="checkbox-grid" id="cbGrid"></div>
+  <button class="reset-btn" onclick="resetFilters()">limpar filtros</button>
+</div>
+
+<div class="total-tag" id="totalTag"></div>
+<div class="game-list" id="gameList"><div class="loading"><div class="loading-spinner"></div>buscando jogos...</div></div>
+
+<script>
+const API = "https://futebol-tv-api.onrender.com";
+const LEAGUE_STYLE = {
+  "Brasileirão":{ bg:"#dcfce7", bc:"#4ade80", tc:"#166534" },
+  "Série B":{ bg:"#dcfce7", bc:"#4ade80", tc:"#166534" },
+  "Série C":{ bg:"#dcfce7", bc:"#4ade80", tc:"#166534" },
+  "Série D":{ bg:"#dcfce7", bc:"#4ade80", tc:"#166534" },
+  "Copa do Brasil":{ bg:"#fef9c3", bc:"#facc15", tc:"#854d0e" },
+  "Br. Feminino":{ bg:"#fce7f3", bc:"#f472b6", tc:"#831843" },
+  "LNF":{ bg:"#dcfce7", bc:"#4ade80", tc:"#166534" },
+  "Premier League":{ bg:"#dbeafe", bc:"#60a5fa", tc:"#1e3a8a" },
+  "LaLiga":{ bg:"#fee2e2", bc:"#f87171", tc:"#991b1b" },
+  "Bundesliga":{ bg:"#fef3c7", bc:"#f59e0b", tc:"#78350f" },
+  "Serie A":{ bg:"#ffe4e6", bc:"#fb7185", tc:"#9f1239" },
+  "Ligue 1":{ bg:"#e0e7ff", bc:"#818cf8", tc:"#3730a3" },
+  "Champions League":{ bg:"#fef3c7", bc:"#f59e0b", tc:"#78350f" },
+  "Argentino":{ bg:"#e0f2fe", bc:"#38bdf8", tc:"#0c4a6e" },
+  "Uruguaio":{ bg:"#e0f2fe", bc:"#38bdf8", tc:"#0c4a6e" },
+  "Liga MX":{ bg:"#f5f3ff", bc:"#a78bfa", tc:"#4c1d95" },
+  "default":{ bg:"#f5f5f5", bc:"#ddd", tc:"#555" }
+};
+
+let currentDay = "hoje";
+let checkedLeagues = new Set();
+let cache = { hoje: null, amanha: null };
+
+function chClass(c) {
+  const l = c.toLowerCase();
+  if (l.includes("youtube")||l.includes("caze")||l.includes("goat")||l.includes("sportynet")||l.includes("esporte")||l.includes("nsport")||l.includes("metropoles")||l.includes("lnf")||l.includes("uol")) return "ch-yt";
+  if (l.includes("disney")) return "ch-disney";
+  if (l.includes("espn")||l.includes("xsport")) return "ch-espn";
+  if (l.includes("sportv")||l.includes("premiere")||l.includes("band")||l.includes("tv brasil")) return "ch-sportv";
+  if (l.includes("prime")) return "ch-prime";
+  return "ch-gen";
+}
+
+function chLabel(c) {
+  c = c.trim();
+  if (c.includes("CazeTV")||c.includes("cazé")||c.includes("caze")) return "Cazé TV";
+  if (c.includes("canalgoatbr")||c.includes("maiscanalgoatbr")) return "Goat BR";
+  if (c.includes("espnbrasil")) return "ESPN Brasil";
+  if (c.includes("SportyNetBrasil")||c.includes("SportyNet")) return "SportyNet";
+  if (c.includes("MetropolesEsportes")||c.includes("Metropoles")) return "Metrópoles";
+  if (c.includes("LNFoficial")) return "LNF";
+  if (c.includes("NSports")) return "NSports";
+  if (c.includes("UOLEsporte")) return "UOL";
+  return c.replace("Youtube.com/@","").replace("Youtube.com/","");
+}
+
+async function loadDay(day) {
+  if (cache[day]) return cache[day];
+  try {
+    const notice = document.getElementById("notice");
+    notice.textContent = "buscando jogos do servidor...";
+    const r = await fetch(API + "/" + day, { signal: AbortSignal.timeout(20000) });
+    if (!r.ok) throw new Error("erro " + r.status);
+    const data = await r.json();
+    cache[day] = data;
+    const now = new Date().toLocaleTimeString("pt-BR", {hour:"2-digit",minute:"2-digit"});
+    notice.textContent = "atualizado às " + now + " · " + data.length + " jogos encontrados";
+    return data;
+  } catch(e) {
+    document.getElementById("notice").textContent = "erro ao buscar jogos — verifique sua internet";
+    document.getElementById("gameList").innerHTML = '<div class="error-box">Não foi possível carregar os jogos.<br>Verifique sua conexão e tente novamente.</div>';
+    return null;
+  }
+}
+
+function buildCheckboxes(data) {
+  const map = {};
+  data.forEach(g => { map[g.league] = (map[g.league]||0)+1; });
+  const leagues = Object.entries(map).sort((a,b) => b[1]-a[1]);
+  document.getElementById("cbGrid").innerHTML = leagues.map(([l,cnt]) => {
+    const checked = checkedLeagues.has(l);
+    return `<div class="cb-item${checked?" checked":""}" onclick="toggleLeague('${l.replace(/'/g,"\\'")}')">
+      <div class="cb-box"><div class="cb-check"></div></div>
+      <span class="cb-label">${l}</span>
+      <span class="cb-count">${cnt}</span>
+    </div>`;
+  }).join("");
+}
+
+function toggleLeague(l) {
+  if (checkedLeagues.has(l)) checkedLeagues.delete(l);
+  else checkedLeagues.add(l);
+  buildCheckboxes(cache[currentDay]);
+  render();
+}
+
+function resetFilters() {
+  checkedLeagues = new Set();
+  document.getElementById("search").value = "";
+  buildCheckboxes(cache[currentDay]);
+  render();
+}
+
+function render() {
+  const data = cache[currentDay];
+  if (!data) return;
+  const q = document.getElementById("search").value.toLowerCase();
+  const filtered = data.filter(g => {
+    const ms = !q || g.match.toLowerCase().includes(q) || g.league.toLowerCase().includes(q) || (g.channels||"").toLowerCase().includes(q);
+    const mf = checkedLeagues.size===0 || checkedLeagues.has(g.league);
+    return ms && mf;
+  });
+
+  document.getElementById("totalTag").textContent = filtered.length + " jogo" + (filtered.length!==1?"s":"") + " encontrado" + (filtered.length!==1?"s":"");
+
+  const byHour = {};
+  filtered.forEach(g => { if(!byHour[g.time]) byHour[g.time]=[]; byHour[g.time].push(g); });
+  const hours = Object.keys(byHour).sort();
+
+  const list = document.getElementById("gameList");
+  if (!hours.length) { list.innerHTML = '<div class="no-results">Nenhum jogo encontrado.</div>'; return; }
+
+  list.innerHTML = hours.map(h => {
+    const cards = byHour[h].map(g => {
+      const ls = LEAGUE_STYLE[g.league] || LEAGUE_STYLE["default"];
+      const chs = (g.channels||"").split(/,\s*/).filter(Boolean);
+      const badges = chs.map(c => `<span class="ch ${chClass(c)}">${chLabel(c)}</span>`).join("");
+      return `<div class="game-card">
+        <div class="game-meta">
+          <span class="time-badge">${h}</span>
+          <span class="league-badge" style="background:${ls.bg};border:1px solid ${ls.bc};color:${ls.tc}">${g.league}</span>
+        </div>
+        <div class="game-title">${g.match}</div>
+        <div class="channels">${badges}</div>
+      </div>`;
+    }).join("");
+    return `<div><div class="hour-label"><span class="hour-dot"></span>${h}</div>${cards}</div>`;
+  }).join("");
+}
+
+async function switchDay(day) {
+  currentDay = day;
+  checkedLeagues = new Set();
+  document.getElementById("search").value = "";
+  document.getElementById("tab-hoje").classList.toggle("active", day==="hoje");
+  document.getElementById("tab-amanha").classList.toggle("active", day==="amanha");
+  document.getElementById("gameList").innerHTML = '<div class="loading"><div class="loading-spinner"></div>buscando jogos...</div>';
+  document.getElementById("cbGrid").innerHTML = "";
+  const data = await loadDay(day);
+  if (data) { buildCheckboxes(data); render(); }
+}
+
+(async () => {
+  const data = await loadDay("hoje");
+  if (data) { buildCheckboxes(data); render(); }
+})();
+</script>
+</body>
+</html>
